@@ -1,0 +1,19 @@
+{
+  "name": "@cloudydeno/datadog-api",
+  "version": "0.3.0",
+  "exports": {
+    "./v1/dashboards": "./v1/dashboards.ts",
+    "./v1/events": "./v1/events.ts",
+    "./v1/metrics": "./v1/metrics.ts",
+    "./v1/monitors": "./v1/monitors.ts",
+    "./v1/service_checks": "./v1/service_checks.ts",
+    "./v1/service_dependencies": "./v1/service_dependencies.ts",
+    "./v1/usage_metering": "./v1/usage_metering.ts",
+    "./v2/roles": "./v2/roles.ts",
+    "./v2/teams": "./v2/teams.ts",
+    "./v2/users": "./v2/users.ts",
+    "./client": "./client.ts",
+    "./errors": "./errors.ts",
+    ".": "./mod.ts"
+  }
+}

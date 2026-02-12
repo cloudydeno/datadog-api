@@ -1,3 +1,5 @@
+import { DatadogError, recognizeError } from "./errors.ts";
+
 // some datadog apis have big IDs, let's stringify them before we lose precision
 function fixupDatadogJson(json: string): string {
   return json.replace(/"(id|[^":]+_id)": *\d+/g, (field) => {
@@ -12,9 +14,35 @@ export type ApiConfig = {
   apiBase?: string;
 };
 
+/** Subset of Deno.env, used when configuring the client based on the process environment. */
+export interface EnvGetter {
+  get(key: string): string | undefined;
+};
+
+export function detectFromEnvironment(env: EnvGetter): ApiConfig {
+  const apiKey = env.get("DATADOG_API_KEY") || env.get("DD_API_KEY");
+  const appKey = env.get("DATADOG_APP_KEY") || env.get("DD_APP_KEY");
+  if (!apiKey) throw new Error(
+    `Export DATADOG_API_KEY (and probably DATADOG_APP_KEY) to use Datadog`,
+  );
+
+  return {
+    apiKey, appKey,
+    apiBase: env.get("DATADOG_HOST"),
+  };
+}
+
 export default class DatadogApiClient {
   headers: Headers;
   apiBase: string;
+
+  /**
+   * Configures an API client based on environment variables.
+   * @example DatadogApi.fromEnvironment(Deno.env)
+   */
+  static fromEnvironment(env: EnvGetter): DatadogApiClient {
+    return new DatadogApiClient(detectFromEnvironment(env));
+  }
 
   constructor(opts: ApiConfig) {
     if (!opts.apiKey) throw new Error(
@@ -34,6 +62,16 @@ export default class DatadogApiClient {
     if (!this.apiBase.includes("://")) throw new Error(
       `If you pass apiBase, it must be an absolute URL`,
     );
+  }
+
+  /**
+   * Check if the API key (not the APP key) is valid.
+   * If invalid, an error is thrown.
+   */
+  validateAccess(): Promise<{valid: true}> {
+    return this.fetchJson({
+      path: `/api/v1/validate`,
+    }) as Promise<{valid: true}>;
   }
 
   async fetchJson(opts: {
@@ -79,94 +117,4 @@ export default class DatadogApiClient {
     }
     throw new Error(`Datadog returned HTTP status ${resp.status}`);
   }
-}
-
-export class DatadogError extends Error {
-  data: ServerError;
-  constructor(body: ServerError) {
-    switch (body._type) {
-      case "simple":
-      case "rich":
-        super(body.errors.join(" & "));
-        break;
-      case "html":
-        super(body.code);
-        break;
-      default:
-        super("BUG: no error type");
-    }
-    Error.captureStackTrace(this, new.target);
-
-    this.name = "DatadogError";
-    this.data = body;
-  }
-}
-
-
-//------------------
-// Error Handling
-
-// Datadog can return a few different shapes of error
-// Let's make an artificial descriminated union so Typescript is more helpful
-// We'll then throw a consistent DatadogError wrapped around whichever is given.
-export type ServerError = SimpleError | RichError | HtmlError;
-
-function recognizeError(data: unknown): ServerError | null {
-  if (isRichError(data)) {
-    data._type = "rich";
-    return data;
-  } else if (isSimpleError(data)) {
-    data._type = "simple";
-    return data;
-  } else if (isHtmlError(data)) {
-    data._type = "html";
-    return data;
-  }
-  return null;
-}
-
-/** Error often returned for validation errors and other endpoint-specific checks */
-export interface SimpleError {
-  "_type": "simple";
-  "errors": string[];
-}
-function isSimpleError(err: any): err is SimpleError {
-  return err &&
-    Array.isArray(err.errors) &&
-    typeof err.errors[0] === "string";
-}
-
-/** Error for general API problems such as missing auth */
-export interface RichError {
-  "_type": "rich";
-  "errors": string[];
-  "status": "error" | string;
-  "code": 400 | 403 | number;
-  "statuspage": string;
-  "twitter": string;
-  "email": string;
-}
-function isRichError(err: any): err is RichError {
-  return err &&
-    Array.isArray(err.errors) &&
-    typeof err.errors[0] === "string" &&
-    typeof err.status === "string" &&
-    typeof err.code === "number" &&
-    typeof err.statuspage === "string" &&
-    typeof err.twitter === "string" &&
-    typeof err.email === "string";
-}
-
-/** Generic error from the overall web server */
-export interface HtmlError {
-  "_type": "html";
-  "code": string;
-  "message": string;
-  "title": string;
-}
-function isHtmlError(err: any): err is HtmlError {
-  return err &&
-    typeof err.code === "string" &&
-    typeof err.message === "string" &&
-    typeof err.title === "string";
 }

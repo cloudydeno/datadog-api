@@ -1,9 +1,12 @@
 ![Deno CI](https://github.com/cloudydeno/deno-datadog_api/workflows/CI/badge.svg?branch=main)
 
-# `/x/datadog_api`: Deno library for Datadog
+# `@cloudydeno/datadog-api`: Client library for Datadog
 
 Very incomplete Typescript client
 for [Datadog's API](https://docs.datadoghq.com/api/v1/).
+
+[Published to jsr.io](https://jsr.io/@cloudydeno/datadog-api),
+installable in all modern Javascript runtimes.
 
 ## Purpose
 
@@ -13,7 +16,7 @@ I'm comparing API docs with actual API payloads as much as possible.
 If you just want to make calls and get JSON back,
 you can use the `datadog.fetchJson({...})` function.
 
-PS: This library doesn't really depend on Deno APIs,
+PS: This library doesn't depend on any Deno APIs,
 it's just targetting Deno as a runtime (Typescript, URL imports, fetch, etc).
 
 ### Implemented APIs
@@ -36,15 +39,22 @@ In the meantime you can use `fetchJson` for such APIs.
 
 ## Usage
 
-Importing `mod.ts` gives you the whole implemented API surface.
+First add the package. Below are several examples for popular package managers:
+
+```sh
+deno add jsr:@cloudydeno/datadog-api
+yarn add jsr:@cloudydeno/datadog-api
+```
+
+The default export gives you the whole implemented API surface.
 
 ```typescript
-import DatadogApi from "https://deno.land/x/datadog_api/mod.ts";
+import DatadogApi from "@cloudydeno/datadog-api";
 
 // Set up an API client using DATADOG_API_KEY and such
 const datadog = DatadogApi.fromEnvironment(Deno.env);
 
-// Optionally check that our API key works, without actually doing anything
+// Optionally check that our API key works, before attempting any action
 await datadog.validateAccess();
 
 // Perform a monitor search by tag
@@ -60,12 +70,12 @@ const dashboardLists = await datadog.fetchJson({
 ### Selective Imports
 
 You can also import specific parts of this module by
-starting with `client.ts` and adding specific APIs from `v1/` or `v2/`.
-This lets you skip downloading APIs you don't plan on using.
+starting with `/client` and adding specific APIs from `/v1/` or `/v2/`.
+This lets you skip loading APIs you don't plan on using.
 
 ```typescript
 // Assemble an API client manually
-import ApiClient from "https://deno.land/x/datadog_api/client.ts";
+import ApiClient from "@cloudydeno/datadog-api/client";
 const datadog = new ApiClient({
   apiKey: Deno.env.get("DATADOG_API_KEY"),
   appKey: Deno.env.get("DATADOG_APP_KEY"),
@@ -73,7 +83,7 @@ const datadog = new ApiClient({
 });
 
 // Set up a Monitors API client
-import V1MonitorsApi from "https://deno.land/x/datadog_api/v1/monitors.ts";
+import V1MonitorsApi from "@cloudydeno/datadog-api/v1/monitors";
 const monitorsApi = new V1MonitorsApi(datadog);
 
 // Get a monitor

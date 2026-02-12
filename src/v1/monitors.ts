@@ -49,7 +49,7 @@ export default class DatadogMonitorsApi {
   }
 
   /** Async generator which follows search pagination, to return every result. */
-  async* searchToEnd(query: string, opts: Omit<SearchOptions, 'page'> = {}) {
+  async* searchToEnd(query: string, opts: Omit<SearchOptions, 'page'> = {}): AsyncGenerator<DatadogMonitorSearchResultItem> {
     let page = 0;
     let pageCount = 0;
     do {
@@ -79,23 +79,7 @@ interface UserRef {
 type SearchCountFacet<T> = Array<{ count: number; name: T }>;
 
 interface DatadogMonitorSearchResult {
-  monitors: Array<{
-    status: MonitorStatus;
-    scopes: string[];
-    classification: MonitorClassification;
-    creator: UserRef;
-    overall_state_modified: number;
-    metrics: string[];
-    notifications: UserRef[];
-    last_triggered_ts: number | null;
-    query: string;
-    id: string;
-    name: string;
-    tags: string[];
-    org_id: string;
-    restricted_roles: TODO[];
-    type: MonitorType;
-  }>;
+  monitors: Array<DatadogMonitorSearchResultItem>;
   counts: {
     status: SearchCountFacet<string>;
     muted: SearchCountFacet<boolean>;
@@ -108,6 +92,24 @@ interface DatadogMonitorSearchResult {
     per_page: number;
     total_count: number;
   };
+}
+
+interface DatadogMonitorSearchResultItem {
+  status: MonitorStatus;
+  scopes: string[];
+  classification: MonitorClassification;
+  creator: UserRef;
+  overall_state_modified: number;
+  metrics: string[];
+  notifications: UserRef[];
+  last_triggered_ts: number | null;
+  query: string;
+  id: string;
+  name: string;
+  tags: string[];
+  org_id: string;
+  restricted_roles: TODO[];
+  type: MonitorType;
 }
 
 interface DatadogMonitor {
