@@ -28,6 +28,7 @@ it's just targetting Deno as a runtime (Typescript, URL imports, fetch, etc).
 * `v1UsageMetering`: get billable summary, get top custom metrics
 * `v2Roles`: list and describe roles & permissions
 * `v2Users`: list, search, and describe datadog users
+* `v2Teams`: list, search, and describe datadog teams
 
 If you want a different API not listed here,
 please open a Github issue or PR into `v1/` or `v2/` as appropriate.

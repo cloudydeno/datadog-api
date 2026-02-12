@@ -1,5 +1,5 @@
 import type {
-  ResultPage, Included,
+  UsersResultPage, TeamsIncluded,
   Role, User, Permission,
 } from "./lib/identity.ts";
 
@@ -20,11 +20,11 @@ export default class DatadogRolesApi {
   }
 
   /** Returns all roles, including their names and IDs. */
-  async listRoles(): Promise<ResultPage<Role>> {
+  async listRoles(): Promise<UsersResultPage<Role>> {
     const json = await this.#api.fetchJson({
       path: `/api/v2/roles`,
     });
-    return json as ResultPage<Role>;
+    return json as UsersResultPage<Role>;
   }
 
   /** Get a role in the organization specified by the role’s role_id. */
@@ -36,11 +36,11 @@ export default class DatadogRolesApi {
   }
 
   /** Gets all users of a role. */
-  async getRoleUsers(roleId: string): Promise<ResultPage<User> & Included> {
+  async getRoleUsers(roleId: string): Promise<UsersResultPage<User> & TeamsIncluded> {
     const json = await this.#api.fetchJson({
       path: `/api/v2/roles/${encodeURIComponent(roleId)}/users`,
     });
-    return json as ResultPage<User> & Included;
+    return json as UsersResultPage<User> & TeamsIncluded;
   }
 
   /** Returns a list of all permissions for a single role. */

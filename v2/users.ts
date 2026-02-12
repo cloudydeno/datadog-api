@@ -1,6 +1,7 @@
 import type {
-  ResultPage, Included,
-  Role, User, Permission,
+  TeamsResultPage, TeamMembership,
+  UsersResultPage, UsersIncluded,
+  User, Permission,
   UserStatus,
   UserInvitation,
 } from "./lib/identity.ts";
@@ -34,7 +35,7 @@ export default class DatadogUsersApi {
     };
     filter?: string;
     filterStatus?: Array<UserStatus>;
-  } = {}): Promise<ResultPage<User> & Included> {
+  } = {}): Promise<UsersResultPage<User> & UsersIncluded> {
     const qs = new URLSearchParams();
     if (opts.page != null) qs.set("page[number]", `${opts.page}`);
     if (opts.per_page != null) qs.set("page[size]", `${opts.per_page}`);
@@ -47,23 +48,23 @@ export default class DatadogUsersApi {
       path: `/api/v2/users`,
       query: qs,
     });
-    return json as ResultPage<User> & Included;
+    return json as UsersResultPage<User> & UsersIncluded;
   }
 
   /** Get a user in the organization specified by the user’s user_id. */
-  async getUser(userId: string): Promise<{data: User} & Included> {
+  async getUser(userId: string): Promise<{data: User} & UsersIncluded> {
     const json = await this.#api.fetchJson({
       path: `/api/v2/users/${encodeURIComponent(userId)}`,
     });
-    return json as {data: User} & Included;
+    return json as {data: User} & UsersIncluded;
   }
 
   /** Returns the user information and all organizations joined by this user. */
-  async getUserOrgs(userId: string): Promise<{data: User} & Included> {
+  async getUserOrgs(userId: string): Promise<{data: User} & UsersIncluded> {
     const json = await this.#api.fetchJson({
       path: `/api/v2/users/${encodeURIComponent(userId)}/orgs`,
     });
-    return json as {data: User} & Included;
+    return json as {data: User} & UsersIncluded;
   }
 
   /** Returns a list of the user’s permissions granted by the associated user’s roles. */
@@ -80,6 +81,14 @@ export default class DatadogUsersApi {
       path: `/api/v2/user_invitations/${encodeURIComponent(uuid)}`,
     });
     return json as {data: UserInvitation};
+  }
+
+  /** Get a list of memberships for a user */
+  async getUserMemberships(userId: string): Promise<{data: TeamsResultPage<TeamMembership>}> {
+    const json = await this.#api.fetchJson({
+      path: `/api/v2/users/${encodeURIComponent(userId)}/memberships`,
+    });
+    return json as {data: TeamsResultPage<TeamMembership>};
   }
 
 }

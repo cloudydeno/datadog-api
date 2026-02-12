@@ -11,6 +11,7 @@ import v1EventsApi from "./v1/events.ts";
 
 import v2RolesApi from "./v2/roles.ts";
 import v2UsersApi from "./v2/users.ts";
+import v2TeamsApi from "./v2/teams.ts";
 
 // subset of Deno.env
 interface EnvGetter {
@@ -125,5 +126,10 @@ export default class DatadogApi extends ApiClient {
   /** Create, edit, and disable users. */
   get v2Users(): v2UsersApi {
     return new v2UsersApi(this);
+  }
+
+  /** Get info about Teams. */
+  get v2Teams(): v2TeamsApi {
+    return new v2TeamsApi(this);
   }
 }
