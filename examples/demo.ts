@@ -1,5 +1,5 @@
 // Make automatic client from environment variables
-import DatadogApi from "./mod.ts";
+import DatadogApi from "@cloudydeno/datadog-api";
 const datadog = DatadogApi.fromEnvironment(Deno.env);
 
 console.log('Auth is valid:', await datadog.validateAccess());

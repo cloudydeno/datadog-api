@@ -1,4 +1,7 @@
-import ApiClient from "./client.ts";
+import ApiClient, {
+  detectFromEnvironment,
+  type EnvGetter,
+} from "./client.ts";
 
 import v1DashboardsApi from "./v1/dashboards.ts";
 import v1MetricsApi from "./v1/metrics.ts";
@@ -13,40 +16,24 @@ import v2RolesApi from "./v2/roles.ts";
 import v2UsersApi from "./v2/users.ts";
 import v2TeamsApi from "./v2/teams.ts";
 
-// subset of Deno.env
-interface EnvGetter {
-  get(key: string): string | undefined;
-};
-
+/**
+ * All-in-one interface to all implemented Datadog API calls.
+ */
 export default class DatadogApi extends ApiClient {
-  static fromEnvironment(env: EnvGetter): DatadogApi {
-    const apiKey = env.get("DATADOG_API_KEY") || env.get("DD_API_KEY");
-    const appKey = env.get("DATADOG_APP_KEY") || env.get("DD_APP_KEY");
-    if (!apiKey) throw new Error(
-      `Export DATADOG_API_KEY (and probably DATADOG_APP_KEY) to use Datadog`,
-    );
 
-    return new DatadogApi({
-      apiKey, appKey,
-      apiBase: env.get("DATADOG_HOST"),
-    });
+  /**
+   * Configures an API client based on environment variables.
+   * @example DatadogApi.fromEnvironment(Deno.env)
+   */
+  static override fromEnvironment(env: EnvGetter): DatadogApi {
+    return new DatadogApi(detectFromEnvironment(env));
   }
 
   /**
-   * Check if the API key (not the APP key) is valid.
-   * If invalid, an error is thrown.
+   * Interact with your dashboard lists through the API to make it easier
+   * to organize, find, and share all of your dashboards with your team and organization.
    */
-  validateAccess(): Promise<{valid: true}> {
-    return this.fetchJson({
-      path: `/api/v1/validate`,
-    }) as Promise<{valid: true}>;
-  }
-
-  /**
- * Interact with your dashboard lists through the API to make it easier
- * to organize, find, and share all of your dashboards with your team and organization.
-   */
-   get v1Dashboards(): v1DashboardsApi {
+  get v1Dashboards(): v1DashboardsApi {
     return new v1DashboardsApi(this);
   }
 

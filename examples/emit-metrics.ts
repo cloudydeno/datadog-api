@@ -2,7 +2,7 @@
 // metrics can be viewed here:
 // https://app.datadoghq.com/metric/explorer?live=true&page=0&is_auto=false&tile_size=m&exp_metric=deno.synergy%2Cdeno.system_memory.available%2Cdeno.system_memory.cached&exp_agg=avg&exp_row_type=metric
 
-import DatadogApi, { CheckStatus } from "../mod.ts";
+import DatadogApi, { CheckStatus } from "@cloudydeno/datadog-api";
 const datadog = DatadogApi.fromEnvironment(Deno.env);
 
 // Some things to submit alongside all of our data

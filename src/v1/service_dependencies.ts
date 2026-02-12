@@ -28,7 +28,9 @@ export default class DatadogServiceDependenciesApi {
    * The services retrieved are filtered by environment and a primary tag, if one is defined.
    * @returns An object containing a list of APM services and their dependencies.
    */
-  async getAllServices(opts: ServiceDependenciesOptions) {
+  async getAllServices(opts: ServiceDependenciesOptions): Promise<Record<string, {
+    "calls": Array<string>;
+  }>> {
     return await this.#api.fetchJson({
       path: `/api/v1/service_dependencies`,
       query: encodeOptions(opts),
@@ -40,7 +42,10 @@ export default class DatadogServiceDependenciesApi {
   /**
    * Variant of getAllServices() which converts the response object into an Array.
    */
-  async getAllServicesAsArray(opts: ServiceDependenciesOptions) {
+  async getAllServicesAsArray(opts: ServiceDependenciesOptions): Promise<Array<{
+    calls: Array<string>;
+    name: string;
+  }>> {
     return Object
       .entries(await this.getAllServices(opts))
       .map(([name, data]) => ({name, ...data}));
@@ -52,7 +57,7 @@ export default class DatadogServiceDependenciesApi {
    * @param service The name of the service go get dependencies for.
    * @returns An object with information on APM services that call, and are called by a given service.
    */
-  async getSingleService(service: string, opts: ServiceDependenciesOptions) {
+  async getSingleService(service: string, opts: ServiceDependenciesOptions): Promise<SingleServiceDependencies> {
     return await this.#api.fetchJson({
       path: `/api/v1/service_dependencies/${encodeURIComponent(service)}`,
       query: encodeOptions(opts),
